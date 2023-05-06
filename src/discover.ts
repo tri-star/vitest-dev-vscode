@@ -15,6 +15,7 @@ import { shouldIncludeFile } from './vscodeUtils'
 
 import { getConfig, vitestEnvironmentFolders } from './config'
 import { log } from './log'
+import { isBabelParserError } from './pure/parsers/babel_parser'
 
 export class TestFileDiscoverer extends vscode.Disposable {
   private lastWatches = [] as vscode.FileSystemWatcher[]
@@ -253,7 +254,14 @@ export function discoverTestFromFileContent(
     result = parse(fileItem.id, content)
   }
   catch (e) {
-    log.error('parse error')
+    let detail = ''
+    let fileLocation = fileItem.uri?.toString()
+    if (isBabelParserError(e)) {
+      detail = `Detail: ${e.message}\n`
+      fileLocation += `File: ${e.loc.line}:${e.loc.column}\n`
+    }
+
+    log.error('parse error', fileLocation, detail)
     return
   }
 

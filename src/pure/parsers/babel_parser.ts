@@ -23,6 +23,16 @@ import {
 } from './parser_nodes'
 import { parseOptions } from './helper'
 
+export interface BabelParseError {
+  message: string
+  loc: {
+    column: number
+    line: number
+  }
+  code: string // e.g. BABEL_PARSER_SYNTAX_ERROR
+  reasonCode: string // e.g. MissingSemicolon
+}
+
 const _getASTfor = (
   file: string,
   data?: string,
@@ -240,4 +250,11 @@ export const parse = (
   searchNodes(program, parseResult.root)
 
   return parseResult
+}
+
+export function isBabelParserError(e: any): e is BabelParseError {
+  return e?.loc?.line != null
+    && e?.loc?.column != null
+    && e?.code !== ''
+    && e?.reasonCode !== ''
 }
